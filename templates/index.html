@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sailing Data Exporter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 1.5rem;
+    }
+
+    h1 {
+      color: #4fc3f7;
+      margin: 0 0 1.5rem;
+      font-size: 1.5rem;
+    }
+
+    .card {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card h2 {
+      margin: 0 0 1rem;
+      font-size: 1rem;
+      color: #90caf9;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .time-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    label.field-label {
+      font-size: 0.8rem;
+      color: #90caf9;
+    }
+
+    input[type="datetime-local"], select {
+      background: #0f3460;
+      border: 1px solid #4fc3f7;
+      border-radius: 4px;
+      color: #e0e0e0;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.95rem;
+    }
+
+    input[type="datetime-local"]:focus, select:focus {
+      outline: 2px solid #4fc3f7;
+    }
+
+    /* Measurement groups */
+    .groups-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    .group-box {
+      background: #0f3460;
+      border-radius: 6px;
+      padding: 0.75rem;
+    }
+
+    .group-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .group-header strong {
+      color: #4fc3f7;
+      font-size: 0.9rem;
+    }
+
+    .toggle-link {
+      font-size: 0.75rem;
+      color: #90caf9;
+      cursor: pointer;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+
+    .measurement-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .measurement-item input[type="checkbox"] {
+      accent-color: #4fc3f7;
+      width: 14px;
+      height: 14px;
+      cursor: pointer;
+    }
+
+    .measurement-item label {
+      font-size: 0.78rem;
+      color: #cfd8dc;
+      cursor: pointer;
+      font-family: monospace;
+    }
+
+    /* Actions row */
+    .actions-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    button[type="submit"] {
+      background: #4fc3f7;
+      color: #0a0a1a;
+      border: none;
+      border-radius: 6px;
+      padding: 0.6rem 1.4rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    button[type="submit"]:hover { background: #81d4fa; }
+    button[type="submit"]:active { background: #29b6f6; }
+    button[type="submit"]:disabled {
+      background: #455a64;
+      color: #90a4ae;
+      cursor: not-allowed;
+    }
+
+    #status {
+      font-size: 0.9rem;
+      color: #90caf9;
+      display: none;
+    }
+
+    #status.visible { display: inline; }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #4fc3f7;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-msg {
+      color: #ef9a9a;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>⛵ Sailing Data Exporter</h1>
+
+<form method="POST" action="{{ url_for('download') }}" id="export-form">
+
+  <!-- Time window -->
+  <div class="card">
+    <h2>Time Window (UTC)</h2>
+    <div class="time-row">
+      <div class="field-group">
+        <label class="field-label" for="start">Start</label>
+        <input type="datetime-local" id="start" name="start" required>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="stop">Stop</label>
+        <input type="datetime-local" id="stop" name="stop" required value="{{ now }}">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="interval">Downsample</label>
+        <select id="interval" name="interval">
+          {% for val, label in interval_options %}
+          <option value="{{ val }}" {% if val == default_interval %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Measurement groups -->
+  <div class="card">
+    <h2>Measurements</h2>
+    <div class="groups-grid">
+      {% for group_name, measurements in groups %}
+      <div class="group-box">
+        <div class="group-header">
+          <strong>{{ group_name }}</strong>
+          <button type="button" class="toggle-link" data-group="{{ loop.index0 }}">none</button>
+        </div>
+        {% for m in measurements %}
+        <div class="measurement-item">
+          <input type="checkbox" id="m_{{ m }}" name="measurements" value="{{ m }}"
+                 checked data-group="{{ loop.index0 - 1 }}">
+          <label for="m_{{ m }}">{{ m }}</label>
+        </div>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="card">
+    <div class="actions-row">
+      <button type="submit" id="dl-btn">⬇ Download CSV</button>
+      <span id="status"></span>
+    </div>
+  </div>
+
+</form>
+
+<script>
+  // Fix group data-group indices (Jinja loop.index0 is on the outer loop)
+  document.querySelectorAll('.group-box').forEach((box, i) => {
+    box.querySelector('.toggle-link').dataset.group = i;
+    box.querySelectorAll('input[type=checkbox]').forEach(cb => cb.dataset.group = i);
+  });
+
+  // Toggle all/none per group
+  document.querySelectorAll('.toggle-link').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const g = btn.dataset.group;
+      const boxes = document.querySelectorAll(`input[type=checkbox][data-group="${g}"]`);
+      const allChecked = [...boxes].every(b => b.checked);
+      boxes.forEach(b => b.checked = !allChecked);
+      btn.textContent = allChecked ? 'all' : 'none';
+    });
+  });
+
+  // Update toggle label based on current state
+  document.querySelectorAll('input[type=checkbox]').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const g = cb.dataset.group;
+      const boxes = document.querySelectorAll(`input[type=checkbox][data-group="${g}"]`);
+      const btn = document.querySelector(`.toggle-link[data-group="${g}"]`);
+      btn.textContent = [...boxes].every(b => b.checked) ? 'none' : 'all';
+    });
+  });
+
+  // Show spinner while downloading
+  const form = document.getElementById('export-form');
+  const btn  = document.getElementById('dl-btn');
+  const status = document.getElementById('status');
+
+  form.addEventListener('submit', () => {
+    btn.disabled = true;
+    status.innerHTML = '<span class="spinner"></span> Querying InfluxDB…';
+    status.classList.add('visible');
+    // Re-enable after a delay (download completes in-place)
+    setTimeout(() => {
+      btn.disabled = false;
+      status.classList.remove('visible');
+    }, 15000);
+  });
+</script>
+
+</body>
+</html>

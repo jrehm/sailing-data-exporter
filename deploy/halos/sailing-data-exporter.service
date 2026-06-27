@@ -1,0 +1,15 @@
+[Unit]
+Description=Sailing Data Exporter
+After=network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/GitHub/sailing-data-exporter
+EnvironmentFile=/home/pi/GitHub/sailing-data-exporter/deploy/halos/sailing-data-exporter.env
+ExecStart=/home/pi/.local/sailing-data-exporter-venv/bin/python app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
