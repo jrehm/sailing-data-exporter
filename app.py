@@ -81,6 +81,7 @@ MEASUREMENT_GROUPS = [
     ]),
     ("Course / VMG", [
         ("VMG to Waypoint",   "VMG", "navigation.course.calcValues.velocityMadeGood", "value", None, _scale(_MPS_TO_KTS), "kts"),
+        ("VMC (closing speed on mark)", "VMC", None, None, None, None, "kts"),
         ("Bearing to Mark",   "BRG", "navigation.course.calcValues.bearingTrue",      "value", None, _scale(_RAD_TO_DEG), "°"),
         ("Distance to Mark",  "DTG", "navigation.course.calcValues.distance",         "value", None, _scale(_M_TO_NM),    "nm"),
         ("Cross-Track Error", "XTE", "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_NM),    "nm"),
@@ -104,11 +105,27 @@ INTERVAL_OPTIONS = [
 ]
 
 # Flat lookup: abbrev → (measurement, field, preferred_source, convert)
+# Excludes derived columns (measurement=None) like VMC.
 _ABBREV_MAP = {
     abbrev: (measurement, field, source, convert)
     for _, entries in MEASUREMENT_GROUPS
     for (_, abbrev, measurement, field, source, convert, _unit) in entries
+    if measurement is not None
 }
+
+# Derived columns computed from other already-fetched columns.
+# VMC = SOG × cos(COGt − BRG), where COGt and BRG are already in degrees.
+_VMC_DEPS = ("SOG", "COGt", "BRG")
+
+def _compute_vmc(sog_str: str, cogt_str: str, brg_str: str) -> str:
+    """Velocity Made on Course (kts): closing speed directly toward the mark."""
+    try:
+        sog  = float(sog_str)
+        cogt = float(cogt_str)
+        brg  = float(brg_str)
+        return str(round(sog * math.cos(math.radians(cogt - brg)), 4))
+    except (ValueError, TypeError):
+        return ""
 
 # ---------------------------------------------------------------------------
 # App
@@ -171,10 +188,22 @@ def _build_csv(selected_abbrevs: list[str],
                tz: ZoneInfo) -> str:
     """Query all selected columns and produce wide-format CSV."""
 
+    # Determine which abbrevs need InfluxDB queries vs derivation
+    vmc_selected = "VMC" in selected_abbrevs
+    fetch_abbrevs = [a for a in selected_abbrevs if a != "VMC"]
+
+    # VMC requires SOG, COGt, BRG — fetch them if not already selected
+    extra_fetches = []
+    if vmc_selected:
+        for dep in _VMC_DEPS:
+            if dep not in fetch_abbrevs:
+                fetch_abbrevs.append(dep)
+                extra_fetches.append(dep)
+
     client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
     try:
         data: dict[str, dict[str, str]] = {}
-        for abbrev in selected_abbrevs:
+        for abbrev in fetch_abbrevs:
             measurement, field, source, convert = _ABBREV_MAP[abbrev]
             data[abbrev] = _query_series(
                 client, measurement, field, source, convert,
@@ -191,12 +220,18 @@ def _build_csv(selected_abbrevs: list[str],
         )
         writer.writeheader()
         for ts in all_ts:
-            # Convert UTC timestamp string to local time
             utc_dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
             local_ts = utc_dt.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S")
             row: dict = {"timestamp": local_ts}
             for abbrev in selected_abbrevs:
-                row[abbrev] = data[abbrev].get(ts, "")
+                if abbrev == "VMC":
+                    row["VMC"] = _compute_vmc(
+                        data.get("SOG",  {}).get(ts, ""),
+                        data.get("COGt", {}).get(ts, ""),
+                        data.get("BRG",  {}).get(ts, ""),
+                    )
+                else:
+                    row[abbrev] = data[abbrev].get(ts, "")
             writer.writerow(row)
 
         return out.getvalue()
