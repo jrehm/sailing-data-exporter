@@ -200,15 +200,17 @@
 
   <!-- Time window -->
   <div class="card">
-    <h2>Time Window (UTC)</h2>
+    <h2>Time Window <span id="tz-label" style="font-size:0.75rem;color:#90a4ae;text-transform:none;font-weight:normal;letter-spacing:0"></span></h2>
+    <input type="hidden" name="start_utc" id="start_utc">
+    <input type="hidden" name="stop_utc"  id="stop_utc">
     <div class="time-row">
       <div class="field-group">
         <label class="field-label" for="start">Start</label>
-        <input type="datetime-local" id="start" name="start" required>
+        <input type="datetime-local" id="start" required>
       </div>
       <div class="field-group">
         <label class="field-label" for="stop">Stop</label>
-        <input type="datetime-local" id="stop" name="stop" required value="{{ now }}">
+        <input type="datetime-local" id="stop" required>
       </div>
       <div class="field-group">
         <label class="field-label" for="interval">Downsample</label>
@@ -284,16 +286,34 @@
     });
   });
 
-  // Show spinner while downloading
+  // Set default times to local "now" and show timezone name
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  document.getElementById('tz-label').textContent = `(${tz})`;
+
+  function toLocalInputValue(date) {
+    // Format a Date as "YYYY-MM-DDTHH:MM" in local time for datetime-local input
+    const pad = n => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+  document.getElementById('stop').value = toLocalInputValue(new Date());
+
+  // Show spinner while downloading; convert local times to UTC before submit
   const form = document.getElementById('export-form');
   const btn  = document.getElementById('dl-btn');
   const status = document.getElementById('status');
 
-  form.addEventListener('submit', () => {
+  form.addEventListener('submit', (e) => {
+    const startVal = document.getElementById('start').value;
+    const stopVal  = document.getElementById('stop').value;
+    if (!startVal || !stopVal) return; // let browser validation handle it
+
+    // datetime-local value is local time — new Date() interprets it as local
+    document.getElementById('start_utc').value = new Date(startVal).toISOString();
+    document.getElementById('stop_utc').value  = new Date(stopVal).toISOString();
+
     btn.disabled = true;
     status.innerHTML = '<span class="spinner"></span> Querying InfluxDB…';
     status.classList.add('visible');
-    // Re-enable after a delay (download completes in-place)
     setTimeout(() => {
       btn.disabled = false;
       status.classList.remove('visible');

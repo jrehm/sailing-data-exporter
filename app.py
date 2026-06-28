@@ -204,20 +204,18 @@ def _build_csv(selected_abbrevs: list[str],
 
 @app.route("/")
 def index():
-    now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M")
     return render_template(
         "index.html",
         groups=MEASUREMENT_GROUPS,
         interval_options=INTERVAL_OPTIONS,
         default_interval="10s",
-        now=now,
     )
 
 
 @app.route("/download", methods=["POST"])
 def download():
-    start_raw = request.form.get("start", "").strip()
-    stop_raw  = request.form.get("stop",  "").strip()
+    start_raw = request.form.get("start_utc", "").strip()
+    stop_raw  = request.form.get("stop_utc",  "").strip()
     interval  = request.form.get("interval", "10s")
     selected  = request.form.getlist("measurements")  # list of abbrevs
 
@@ -229,8 +227,9 @@ def download():
         interval = "10s"
 
     try:
-        start_dt = datetime.fromisoformat(start_raw).replace(tzinfo=timezone.utc)
-        stop_dt  = datetime.fromisoformat(stop_raw).replace(tzinfo=timezone.utc)
+        # JS sends full ISO 8601 with Z suffix — parse directly as UTC
+        start_dt = datetime.fromisoformat(start_raw.replace("Z", "+00:00"))
+        stop_dt  = datetime.fromisoformat(stop_raw.replace("Z", "+00:00"))
     except ValueError:
         return "Invalid date format.", 400
     if stop_dt <= start_dt:
