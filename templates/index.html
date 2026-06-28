@@ -203,6 +203,7 @@
     <h2>Time Window <span id="tz-label" style="font-size:0.75rem;color:#90a4ae;text-transform:none;font-weight:normal;letter-spacing:0"></span></h2>
     <input type="hidden" name="start_utc" id="start_utc">
     <input type="hidden" name="stop_utc"  id="stop_utc">
+    <input type="hidden" name="timezone"  id="timezone">
     <div class="time-row">
       <div class="field-group">
         <label class="field-label" for="start">Start</label>
@@ -310,6 +311,7 @@
     // datetime-local value is local time — new Date() interprets it as local
     document.getElementById('start_utc').value = new Date(startVal).toISOString();
     document.getElementById('stop_utc').value  = new Date(stopVal).toISOString();
+    document.getElementById('timezone').value  = tz;
 
     btn.disabled = true;
     status.innerHTML = '<span class="spinner"></span> Querying InfluxDB…';

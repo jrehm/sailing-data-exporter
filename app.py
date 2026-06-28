@@ -3,6 +3,7 @@ import io
 import math
 import os
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import Flask, Response, render_template, request
 from influxdb_client import InfluxDBClient
@@ -70,7 +71,6 @@ MEASUREMENT_GROUPS = [
     ("Attitude", [
         ("Roll",  "ROLL",  "navigation.attitude.roll",  "value", "ws.SensESP.XX", _scale(_RAD_TO_DEG), "°"),
         ("Pitch", "PITCH", "navigation.attitude.pitch", "value", "ws.SensESP.XX", _scale(_RAD_TO_DEG), "°"),
-        ("Yaw",   "YAW",   "navigation.attitude.yaw",   "value", "ws.SensESP.XX", _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Wind", [
         ("Apparent Wind Speed", "AWS", "environment.wind.speedApparent", "value", "n2k-can0.2", _scale(_MPS_TO_KTS), "kts"),
@@ -165,7 +165,8 @@ def _query_series(client: InfluxDBClient, measurement: str, field: str,
 
 
 def _build_csv(selected_abbrevs: list[str],
-               start: str, stop: str, interval: str) -> str:
+               start: str, stop: str, interval: str,
+               tz: ZoneInfo) -> str:
     """Query all selected columns and produce wide-format CSV."""
 
     client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
@@ -188,7 +189,10 @@ def _build_csv(selected_abbrevs: list[str],
         )
         writer.writeheader()
         for ts in all_ts:
-            row: dict = {"timestamp": ts}
+            # Convert UTC timestamp string to local time
+            utc_dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            local_ts = utc_dt.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S")
+            row: dict = {"timestamp": local_ts}
             for abbrev in selected_abbrevs:
                 row[abbrev] = data[abbrev].get(ts, "")
             writer.writerow(row)
@@ -216,8 +220,14 @@ def index():
 def download():
     start_raw = request.form.get("start_utc", "").strip()
     stop_raw  = request.form.get("stop_utc",  "").strip()
+    tz_name   = request.form.get("timezone",  "UTC").strip()
     interval  = request.form.get("interval", "10s")
     selected  = request.form.getlist("measurements")  # list of abbrevs
+
+    try:
+        tz = ZoneInfo(tz_name)
+    except (ZoneInfoNotFoundError, KeyError):
+        tz = timezone.utc
 
     if not start_raw or not stop_raw:
         return "Missing start or stop time.", 400
@@ -246,7 +256,7 @@ def download():
         if abbrev in set(selected)
     ]
 
-    csv_data = _build_csv(ordered_abbrevs, start_rfc, stop_rfc, interval)
+    csv_data = _build_csv(ordered_abbrevs, start_rfc, stop_rfc, interval, tz)
 
     filename = (
         f"sailing_{start_dt.strftime('%Y%m%d_%H%M')}"
