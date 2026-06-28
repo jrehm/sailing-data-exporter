@@ -1,5 +1,6 @@
 import csv
 import io
+import math
 import os
 from datetime import datetime, timezone
 
@@ -19,55 +20,76 @@ INFLUX_BUCKET = os.environ.get("INFLUX_BUCKET", "signalk")
 PORT = int(os.environ.get("PORT", 5002))
 
 # ---------------------------------------------------------------------------
-# Measurement definitions
-#
-# Each entry: (label, abbreviation, measurement, field, preferred_source)
-#
-# preferred_source: if set, filter to that source; if None, take first value
-#                   per timestamp (all sources for that measurement are the
-#                   same physical sensor, e.g. derived-data or single-source).
-# field: normally "value"; position uses "lat" and "lon" (handled specially).
+# Unit conversion helpers
 # ---------------------------------------------------------------------------
 
-# Special sentinel for position (two columns from one measurement)
-_POS = "_POSITION_"
+_MPS_TO_KTS  = 1.94384
+_RAD_TO_DEG  = math.degrees(1)          # 57.2958
+_RADS_TO_DEGMIN = _RAD_TO_DEG * 60      # rad/s → °/min
+_M_TO_FT     = 3.28084
+_M_TO_NM     = 0.000539957
+
+
+def _scale(factor: float):
+    """Return a converter that multiplies by factor, rounded to 4 dp."""
+    def fn(v: float) -> float:
+        return round(v * factor, 4)
+    return fn
+
+
+def _abs_scale(factor: float):
+    """Like _scale but takes absolute value first (for depth below keel)."""
+    def fn(v: float) -> float:
+        return round(abs(v) * factor, 4)
+    return fn
+
+
+_IDENTITY = _scale(1.0)
+
+# ---------------------------------------------------------------------------
+# Measurement definitions
+#
+# Each entry: (label, abbrev, measurement, field, preferred_source, convert, unit)
+#
+# preferred_source: filter to this source; None = take first value per timestamp
+# field: normally "value"; position uses "lat" and "lon"
+# convert: function applied to raw float value before writing to CSV
+# unit: displayed in the UI next to the abbreviation
+# ---------------------------------------------------------------------------
 
 MEASUREMENT_GROUPS = [
     ("Navigation", [
-        # (label, abbrev, measurement, field, preferred_source)
-        ("Speed Over Ground",         "SOG",  "navigation.speedOverGround",         "value", "n2k-can0.10"),
-        ("Course Over Ground (True)", "COGt", "navigation.courseOverGroundTrue",    "value", "n2k-can0.10"),
-        ("Heading Magnetic",          "HDG",  "navigation.headingMagnetic",         "value", "ws.SensESP.XX"),
-        ("Heading True",              "HDGt", "navigation.headingTrue",             "value", None),
-        ("Rate of Turn",              "ROT",  "navigation.rateOfTurn",              "value", "ws.SensESP.XX"),
-        ("Latitude",                  "LAT",  "navigation.position",                "lat",   "n2k-can0.10"),
-        ("Longitude",                 "LON",  "navigation.position",                "lon",   "n2k-can0.10"),
-        ("Magnetic Variation",        "VAR",  "navigation.magneticVariation",       "value", "derived-data"),
-        ("Leeway Angle",              "LEE",  "navigation.leewayAngle",             "value", None),
+        ("Speed Over Ground",          "SOG",  "navigation.speedOverGround",         "value", "n2k-can0.10",    _scale(_MPS_TO_KTS),     "kts"),
+        ("Course Over Ground (True)",  "COGt", "navigation.courseOverGroundTrue",    "value", "n2k-can0.10",    _scale(_RAD_TO_DEG),     "°"),
+        ("Heading True",               "HDGt", "navigation.headingTrue",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
+        ("Rate of Turn",               "ROT",  "navigation.rateOfTurn",              "value", "ws.SensESP.XX",  _scale(_RADS_TO_DEGMIN), "°/min"),
+        ("Latitude",                   "LAT",  "navigation.position",                "lat",   "n2k-can0.10",    _IDENTITY,               "°"),
+        ("Longitude",                  "LON",  "navigation.position",                "lon",   "n2k-can0.10",    _IDENTITY,               "°"),
+        ("Leeway Angle",               "LEE",  "navigation.leewayAngle",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
     ]),
     ("Attitude", [
-        ("Roll",  "ROLL",  "navigation.attitude.roll",  "value", "ws.SensESP.XX"),
-        ("Pitch", "PITCH", "navigation.attitude.pitch", "value", "ws.SensESP.XX"),
-        ("Yaw",   "YAW",   "navigation.attitude.yaw",   "value", "ws.SensESP.XX"),
+        ("Roll",  "ROLL",  "navigation.attitude.roll",  "value", "ws.SensESP.XX", _scale(_RAD_TO_DEG), "°"),
+        ("Pitch", "PITCH", "navigation.attitude.pitch", "value", "ws.SensESP.XX", _scale(_RAD_TO_DEG), "°"),
+        ("Yaw",   "YAW",   "navigation.attitude.yaw",   "value", "ws.SensESP.XX", _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Wind", [
-        ("Apparent Wind Speed", "AWS", "environment.wind.speedApparent", "value", "n2k-can0.2"),
-        ("Apparent Wind Angle", "AWA", "environment.wind.angleApparent", "value", "n2k-can0.2"),
+        ("Apparent Wind Speed", "AWS", "environment.wind.speedApparent", "value", "n2k-can0.2", _scale(_MPS_TO_KTS), "kts"),
+        ("Apparent Wind Angle", "AWA", "environment.wind.angleApparent", "value", "n2k-can0.2", _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Depth", [
-        ("Depth Below Keel", "DBK", "environment.depth.belowKeel", "value", None),
+        ("Depth Below Keel", "DBK", "environment.depth.belowKeel", "value", None, _abs_scale(_M_TO_FT), "ft"),
     ]),
     ("Course / VMG", [
-        ("VMG to Waypoint",    "VMG", "navigation.course.calcValues.velocityMadeGood", "value", None),
-        ("Cross-Track Error",  "XTE", "navigation.course.calcValues.crossTrackError",  "value", None),
+        ("VMG to Waypoint",   "VMG", "navigation.course.calcValues.velocityMadeGood", "value", None, _scale(_MPS_TO_KTS), "kts"),
+        ("Cross-Track Error", "XTE", "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_FT),    "ft"),
     ]),
     ("Racing", [
-        ("Time to Start",        "TTS",  "navigation.racing.timeToStart",        "value", None),
-        ("Time to Line",         "TTL",  "navigation.racing.timeToLine",         "value", None),
-        ("Time to Burn",         "TTB",  "navigation.racing.timeToBurn",         "value", None),
-        ("Distance to Line",     "DSL",  "navigation.racing.distanceStartline",  "value", None),
-        ("Next Leg Heading",     "NLH",  "navigation.racing.nextLegHeading",     "value", None),
-        ("Start Time",           "STA",  "navigation.racing.startTime",          "value", None),
+        ("Time to Start",    "TTS", "navigation.racing.timeToStart",       "value", None, _IDENTITY,             "s"),
+        ("Time to Line",     "TTL", "navigation.racing.timeToLine",        "value", None, _IDENTITY,             "s"),
+        ("Time to Burn",     "TTB", "navigation.racing.timeToBurn",        "value", None, _IDENTITY,             "s"),
+        ("Distance to Line", "DSL", "navigation.racing.distanceStartline", "value", None, _scale(_M_TO_NM),      "nm"),
+        ("Next Leg Heading", "NLH", "navigation.racing.nextLegHeading",    "value", None, _scale(_RAD_TO_DEG),   "°"),
+        ("Start Time",       "STA", "navigation.racing.startTime",         "value", None, _IDENTITY,             "s"),
     ]),
 ]
 
@@ -79,11 +101,11 @@ INTERVAL_OPTIONS = [
     ("1m",  "1 minute"),
 ]
 
-# Build flat lookup: abbrev → (measurement, field, preferred_source)
+# Flat lookup: abbrev → (measurement, field, preferred_source, convert)
 _ABBREV_MAP = {
-    abbrev: (measurement, field, source)
+    abbrev: (measurement, field, source, convert)
     for _, entries in MEASUREMENT_GROUPS
-    for (_, abbrev, measurement, field, source) in entries
+    for (_, abbrev, measurement, field, source, convert, _unit) in entries
 }
 
 # ---------------------------------------------------------------------------
@@ -100,9 +122,9 @@ if os.environ.get("BEHIND_PROXY", "").lower() in ("1", "true", "yes"):
 # ---------------------------------------------------------------------------
 
 def _query_series(client: InfluxDBClient, measurement: str, field: str,
-                  preferred_source: str | None,
+                  preferred_source: str | None, convert,
                   start: str, stop: str, interval: str) -> dict[str, str]:
-    """Query one (measurement, field) pair. Returns {iso_timestamp: value_str}."""
+    """Query one (measurement, field) pair. Returns {iso_timestamp: str_value}."""
 
     source_filter = (
         f'  |> filter(fn: (r) => r["source"] == "{preferred_source}")\n'
@@ -135,7 +157,10 @@ def _query_series(client: InfluxDBClient, measurement: str, field: str,
             ts = record.get_time().strftime("%Y-%m-%dT%H:%M:%SZ")
             val = record.get_value()
             if ts not in result and val is not None:
-                result[ts] = str(val)
+                try:
+                    result[ts] = str(convert(float(val)))
+                except (TypeError, ValueError):
+                    result[ts] = str(val)
     return result
 
 
@@ -145,11 +170,12 @@ def _build_csv(selected_abbrevs: list[str],
 
     client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
     try:
-        data: dict[str, dict[str, str]] = {}  # abbrev → {ts → value}
+        data: dict[str, dict[str, str]] = {}
         for abbrev in selected_abbrevs:
-            measurement, field, source = _ABBREV_MAP[abbrev]
+            measurement, field, source, convert = _ABBREV_MAP[abbrev]
             data[abbrev] = _query_series(
-                client, measurement, field, source, start, stop, interval
+                client, measurement, field, source, convert,
+                start, stop, interval,
             )
 
         all_ts = sorted({ts for d in data.values() for ts in d})
@@ -213,11 +239,11 @@ def download():
     start_rfc = start_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
     stop_rfc  = stop_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    # Keep order matching MEASUREMENT_GROUPS
+    # Preserve order from MEASUREMENT_GROUPS
     ordered_abbrevs = [
         abbrev
         for _, entries in MEASUREMENT_GROUPS
-        for (_, abbrev, _, _, _) in entries
+        for (_, abbrev, _, _, _, _, _) in entries
         if abbrev in set(selected)
     ]
 

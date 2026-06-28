@@ -231,13 +231,13 @@
           <strong>{{ group_name }}</strong>
           <button type="button" class="toggle-link" data-group="{{ loop.index0 }}">none</button>
         </div>
-        {% for label, abbrev, measurement, field, source in measurements %}
+        {% for label, abbrev, measurement, field, source, convert, unit in measurements %}
         <div class="measurement-item">
           <input type="checkbox" id="m_{{ abbrev }}" name="measurements" value="{{ abbrev }}"
                  checked data-group="{{ loop.index0 - 1 }}">
           <label for="m_{{ abbrev }}">
             <span class="abbrev">{{ abbrev }}</span>
-            <span class="meas-name">{{ label }}</span>
+            <span class="meas-name">{{ label }} <em>({{ unit }})</em></span>
           </label>
         </div>
         {% endfor %}
