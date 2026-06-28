@@ -81,13 +81,13 @@ MEASUREMENT_GROUPS = [
     ]),
     ("Course / VMG", [
         ("VMG to Waypoint",   "VMG", "navigation.course.calcValues.velocityMadeGood", "value", None, _scale(_MPS_TO_KTS), "kts"),
-        ("Cross-Track Error", "XTE", "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_FT),    "ft"),
+        ("Cross-Track Error", "XTE", "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_NM),    "nm"),
     ]),
     ("Racing", [
         ("Time to Start",    "TTS", "navigation.racing.timeToStart",       "value", None, _IDENTITY,             "s"),
         ("Time to Line",     "TTL", "navigation.racing.timeToLine",        "value", None, _IDENTITY,             "s"),
         ("Time to Burn",     "TTB", "navigation.racing.timeToBurn",        "value", None, _IDENTITY,             "s"),
-        ("Distance to Line", "DSL", "navigation.racing.distanceStartline", "value", None, _scale(_M_TO_NM),      "nm"),
+        ("Distance to Line", "DSL", "navigation.racing.distanceStartline", "value", None, _scale(_M_TO_FT),      "ft"),
         ("Next Leg Heading", "NLH", "navigation.racing.nextLegHeading",    "value", None, _scale(_RAD_TO_DEG),   "°"),
         ("Start Time",       "STA", "navigation.racing.startTime",         "value", None, _IDENTITY,             "s"),
     ]),
