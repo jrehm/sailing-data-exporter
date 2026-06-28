@@ -258,9 +258,11 @@ def download():
 
     csv_data = _build_csv(ordered_abbrevs, start_rfc, stop_rfc, interval, tz)
 
+    local_start = start_dt.astimezone(tz)
+    local_stop  = stop_dt.astimezone(tz)
     filename = (
-        f"sailing_{start_dt.strftime('%Y%m%d_%H%M')}"
-        f"_to_{stop_dt.strftime('%Y%m%d_%H%M')}.csv"
+        f"sailing_{local_start.strftime('%Y%m%d_%H%M%S')}"
+        f"_to_{local_stop.strftime('%Y%m%d_%H%M%S')}.csv"
     )
     return Response(
         csv_data,
