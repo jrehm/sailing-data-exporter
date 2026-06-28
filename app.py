@@ -81,6 +81,8 @@ MEASUREMENT_GROUPS = [
     ]),
     ("Course / VMG", [
         ("VMG to Waypoint",   "VMG", "navigation.course.calcValues.velocityMadeGood", "value", None, _scale(_MPS_TO_KTS), "kts"),
+        ("Bearing to Mark",   "BRG", "navigation.course.calcValues.bearingTrue",      "value", None, _scale(_RAD_TO_DEG), "°"),
+        ("Distance to Mark",  "DTG", "navigation.course.calcValues.distance",         "value", None, _scale(_M_TO_NM),    "nm"),
         ("Cross-Track Error", "XTE", "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_NM),    "nm"),
     ]),
     ("Racing", [
