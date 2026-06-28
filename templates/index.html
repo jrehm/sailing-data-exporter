@@ -207,11 +207,11 @@
     <div class="time-row">
       <div class="field-group">
         <label class="field-label" for="start">Start</label>
-        <input type="datetime-local" id="start" required>
+        <input type="datetime-local" id="start" required step="1">
       </div>
       <div class="field-group">
         <label class="field-label" for="stop">Stop</label>
-        <input type="datetime-local" id="stop" required>
+        <input type="datetime-local" id="stop" required step="1">
       </div>
       <div class="field-group">
         <label class="field-label" for="interval">Downsample</label>
@@ -294,7 +294,7 @@
   function toLocalInputValue(date) {
     // Format a Date as "YYYY-MM-DDTHH:MM" in local time for datetime-local input
     const pad = n => String(n).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   }
   document.getElementById('stop').value = toLocalInputValue(new Date());
 
