@@ -69,8 +69,8 @@ MEASUREMENT_GROUPS = [
         ("Leeway Angle",               "LEE",  "navigation.leewayAngle",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
     ]),
     ("Attitude", [
-        ("Roll",  "ROLL",  "navigation.attitude.roll",  "value", "ws.SensESP.XX", _scale(_RAD_TO_DEG), "°"),
-        ("Pitch", "PITCH", "navigation.attitude.pitch", "value", "ws.SensESP.XX", _scale(_RAD_TO_DEG), "°"),
+        ("Roll",  "ROLL",  "navigation.attitude.roll",  "value", "signalk-attitude-calibrator.XX", _scale(_RAD_TO_DEG), "°"),
+        ("Pitch", "PITCH", "navigation.attitude.pitch", "value", "signalk-attitude-calibrator.XX", _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Wind", [
         ("Apparent Wind Speed", "AWS", "environment.wind.speedApparent", "value", "AdvancedWind", _scale(_MPS_TO_KTS), "kts"),
