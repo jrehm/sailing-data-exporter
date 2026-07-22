@@ -75,6 +75,9 @@ MEASUREMENT_GROUPS = [
     ("Wind", [
         ("Apparent Wind Speed", "AWS", "environment.wind.speedApparent", "value", "AdvancedWind", _scale(_MPS_TO_KTS), "kts"),
         ("Apparent Wind Angle", "AWA", "environment.wind.angleApparent", "value", "AdvancedWind", _scale(_RAD_TO_DEG), "°"),
+        ("True Wind Speed",     "TWS", "environment.wind.speedTrue",     "value", "AdvancedWind", _scale(_MPS_TO_KTS), "kts"),
+        ("True Wind Angle",     "TWA", "environment.wind.angleTrueWater","value", "AdvancedWind", _scale(_RAD_TO_DEG), "°"),
+        ("True Wind Direction", "TWD", "environment.wind.directionTrue", "value", "AdvancedWind", _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Depth", [
         ("Depth Below Keel", "DBK", "environment.depth.belowKeel", "value", None, _abs_scale(_M_TO_FT), "ft"),
