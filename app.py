@@ -73,8 +73,8 @@ MEASUREMENT_GROUPS = [
         ("Pitch", "PITCH", "navigation.attitude.pitch", "value", "ws.SensESP.XX", _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Wind", [
-        ("Apparent Wind Speed", "AWS", "environment.wind.speedApparent", "value", "n2k-can0.2", _scale(_MPS_TO_KTS), "kts"),
-        ("Apparent Wind Angle", "AWA", "environment.wind.angleApparent", "value", "n2k-can0.2", _scale(_RAD_TO_DEG), "°"),
+        ("Apparent Wind Speed", "AWS", "environment.wind.speedApparent", "value", "AdvancedWind", _scale(_MPS_TO_KTS), "kts"),
+        ("Apparent Wind Angle", "AWA", "environment.wind.angleApparent", "value", "AdvancedWind", _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Depth", [
         ("Depth Below Keel", "DBK", "environment.depth.belowKeel", "value", None, _abs_scale(_M_TO_FT), "ft"),
