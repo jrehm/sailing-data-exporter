@@ -38,13 +38,6 @@ def _scale(factor: float):
     return fn
 
 
-def _abs_scale(factor: float):
-    """Like _scale but takes absolute value first (for depth below keel)."""
-    def fn(v: float) -> float:
-        return round(abs(v) * factor, 4)
-    return fn
-
-
 _IDENTITY = _scale(1.0)
 
 # ---------------------------------------------------------------------------
@@ -59,13 +52,16 @@ _IDENTITY = _scale(1.0)
 # ---------------------------------------------------------------------------
 
 MEASUREMENT_GROUPS = [
+    ("Location", [
+        ("Latitude",            "LAT", "navigation.position",          "lat",   "n2k-can0.10", _IDENTITY,          "°"),
+        ("Longitude",           "LON", "navigation.position",          "lon",   "n2k-can0.10", _IDENTITY,          "°"),
+        ("Depth Below Surface", "DBS", "environment.depth.belowSurface","value", None,          _scale(_M_TO_FT),   "ft"),
+    ]),
     ("Navigation", [
         ("Speed Over Ground",          "SOG",  "navigation.speedOverGround",         "value", "n2k-can0.10",    _scale(_MPS_TO_KTS),     "kts"),
         ("Course Over Ground (True)",  "COGt", "navigation.courseOverGroundTrue",    "value", "n2k-can0.10",    _scale(_RAD_TO_DEG),     "°"),
         ("Heading True",               "HDGt", "navigation.headingTrue",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
         ("Rate of Turn",               "ROT",  "navigation.rateOfTurn",              "value", "ws.SensESP.XX",  _scale(_RADS_TO_DEGMIN), "°/min"),
-        ("Latitude",                   "LAT",  "navigation.position",                "lat",   "n2k-can0.10",    _IDENTITY,               "°"),
-        ("Longitude",                  "LON",  "navigation.position",                "lon",   "n2k-can0.10",    _IDENTITY,               "°"),
         ("Leeway Angle",               "LEE",  "navigation.leewayAngle",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
     ]),
     ("Attitude", [
@@ -73,14 +69,12 @@ MEASUREMENT_GROUPS = [
         ("Pitch", "PITCH", "navigation.attitude.pitch", "value", "signalk-attitude-calibrator.XX", _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Wind", [
-        ("Apparent Wind Speed", "AWS", "environment.wind.speedApparent", "value", "AdvancedWind", _scale(_MPS_TO_KTS), "kts"),
-        ("Apparent Wind Angle", "AWA", "environment.wind.angleApparent", "value", "AdvancedWind", _scale(_RAD_TO_DEG), "°"),
-        ("True Wind Speed",     "TWS", "environment.wind.speedTrue",     "value", "AdvancedWind", _scale(_MPS_TO_KTS), "kts"),
-        ("True Wind Angle",     "TWA", "environment.wind.angleTrueWater","value", "AdvancedWind", _scale(_RAD_TO_DEG), "°"),
-        ("True Wind Direction", "TWD", "environment.wind.directionTrue", "value", "AdvancedWind", _scale(_RAD_TO_DEG), "°"),
-    ]),
-    ("Depth", [
-        ("Depth Below Keel", "DBK", "environment.depth.belowKeel", "value", None, _abs_scale(_M_TO_FT), "ft"),
+        ("Apparent Wind Speed", "AWS",  "environment.wind.speedApparent", "value", "AdvancedWind",   _scale(_MPS_TO_KTS), "kts"),
+        ("Apparent Wind Angle", "AWA",  "environment.wind.angleApparent", "value", "AdvancedWind",   _scale(_RAD_TO_DEG), "°"),
+        ("True Wind Speed",     "TWS",  "environment.wind.speedTrue",     "value", "AdvancedWind",   _scale(_MPS_TO_KTS), "kts"),
+        ("True Wind Angle",     "TWA",  "environment.wind.angleTrueWater","value", "AdvancedWind",   _scale(_RAD_TO_DEG), "°"),
+        ("True Wind Direction", "TWD",  "environment.wind.directionTrue", "value", "AdvancedWind",   _scale(_RAD_TO_DEG), "°"),
+        ("Mast Rotation",       "MROT", "navigation.mast.rotation",       "value", "derived-data",   _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Course / VMG", [
         ("VMG to Waypoint",   "VMG", "navigation.course.calcValues.velocityMadeGood", "value", None, _scale(_MPS_TO_KTS), "kts"),
