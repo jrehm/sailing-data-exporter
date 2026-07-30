@@ -61,7 +61,7 @@ MEASUREMENT_GROUPS = [
         ("Speed Over Ground",          "SOG",  "navigation.speedOverGround",         "value", "n2k-can0.10",    _scale(_MPS_TO_KTS),     "kts"),
         ("Course Over Ground (True)",  "COGt", "navigation.courseOverGroundTrue",    "value", "n2k-can0.10",    _scale(_RAD_TO_DEG),     "°"),
         ("Heading True",               "HDGt", "navigation.headingTrue",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
-        ("Rate of Turn",               "ROT",  "navigation.rateOfTurn",              "value", "ws.SensESP.XX",  _scale(_RADS_TO_DEGMIN), "°/min"),
+        ("Rate of Turn",               "ROT",  "navigation.rateOfTurn",              "value", "SensESP.XX",     _scale(_RADS_TO_DEGMIN), "°/min"),
         ("Leeway Angle",               "LEE",  "navigation.leewayAngle",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
     ]),
     ("Attitude", [
