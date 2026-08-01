@@ -11,7 +11,7 @@ if [ ! -d "$VENV" ]; then
   echo "Creating virtualenv..."
   /usr/bin/python3 -m venv "$VENV"
 fi
-"$VENV"/bin/pip install -q flask werkzeug influxdb-client
+"$VENV"/bin/pip install -q -r "$REPO/requirements.txt"
 
 # 2. Systemd unit
 sudo cp "$REPO/deploy/halos/sailing-data-exporter.service" /etc/systemd/system/

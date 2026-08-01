@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- README.md (setup, configuration, measurement reference, deployment, project structure)
+- CLAUDE.md (AI development context, matching convention used across other repos)
+- Makefile (`install`, `run`, `freeze` targets)
+
+### Changed
+- Pinned `requirements.txt` to versions currently deployed on HALOS
+- `deploy/halos/install.sh` now installs from `requirements.txt` instead of a
+  hardcoded package list, so deployed and documented versions can't drift
+- Expanded `.gitignore` with standard Python/editor/OS entries
+
 ## [0.1.0] - 2026-08-01
 
 ### Added
