@@ -40,6 +40,13 @@ def _scale(factor: float):
 
 _IDENTITY = _scale(1.0)
 
+
+def _passthrough(v: float) -> float:
+    """Return the raw value unrounded. Used for lat/lon so we don't throw
+    away GPS precision (4dp rounding = ~11m resolution, unacceptable for
+    position/track data)."""
+    return v
+
 # ---------------------------------------------------------------------------
 # Measurement definitions
 #
@@ -53,8 +60,8 @@ _IDENTITY = _scale(1.0)
 
 MEASUREMENT_GROUPS = [
     ("Location", [
-        ("Latitude",            "LAT", "navigation.position",          "lat",   "n2k-can0.10", _IDENTITY,          "°"),
-        ("Longitude",           "LON", "navigation.position",          "lon",   "n2k-can0.10", _IDENTITY,          "°"),
+        ("Latitude",            "LAT", "navigation.position",          "lat",   "n2k-can0.10", _passthrough,       "°"),
+        ("Longitude",           "LON", "navigation.position",          "lon",   "n2k-can0.10", _passthrough,       "°"),
         ("Depth Below Surface", "DBS", "environment.depth.belowSurface","value", None,          _scale(_M_TO_FT),   "ft"),
     ]),
     ("Navigation", [
