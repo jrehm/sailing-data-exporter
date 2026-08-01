@@ -7,18 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-01
+
 ### Added
+- Genuine VMG (true wind-relative velocity made good) column, sourced from
+  `performance.velocityMadeGood` (published by signalk-polar-performance-plugin)
+- LICENSE file (MIT)
 - README.md (setup, configuration, measurement reference, deployment, project structure)
 - CLAUDE.md (AI development context, matching convention used across other repos)
 - Makefile (`install`, `run`, `freeze` targets)
-- LICENSE (MIT)
 
 ### Changed
+- Renamed the "Course / VMG" group to "Performance"
+- Fixed a mislabeled column: what was called "VMG to Waypoint" was actually
+  pulling `navigation.course.calcValues.velocityMadeGood`, which the
+  `course-provider` plugin defines as waypoint-closing speed — i.e. VMC, not
+  VMG. Relabeled to "VMC (closing speed on mark)" to match what it actually is.
+- Removed the locally-derived VMC calculation (`SOG × cos(COGt − BRG)`) in
+  favor of consuming the already-published `navigation.course.calcValues.velocityMadeGood`
+  directly — it was quietly diverging from the Signal K course-provider's own
+  calculation (rhumbline vs. great-circle bearing handling) and duplicated
+  logic the server already provides
 - Pinned `requirements.txt` to versions currently deployed on HALOS
 - `deploy/halos/install.sh` now installs from `requirements.txt` instead of a
   hardcoded package list, so deployed and documented versions can't drift
 - Expanded `.gitignore` with standard Python/editor/OS entries
 - README license note updated from "not licensed" to MIT, now that LICENSE exists
+
+### Removed
+- `_compute_vmc()` and `_VMC_DEPS` (superseded — see Changed)
 
 ## [0.1.0] - 2026-08-01
 

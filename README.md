@@ -1,7 +1,7 @@
 # Sailing Data Exporter
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-0.1.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.2.0-orange.svg)](CHANGELOG.md)
 
 A small Flask app for pulling a time window of Signal K data out of InfluxDB
 and downloading it as a CSV — for post-race analysis, polar generation, or
@@ -76,11 +76,11 @@ same path. Values are converted (unit scaling) before being written to CSV.
 | Wind | TWA | True Wind Angle | ° |
 | Wind | TWD | True Wind Direction | ° |
 | Wind | MROT | Mast Rotation | ° |
-| Course / VMG | VMG | VMG to Waypoint | kts |
-| Course / VMG | VMC | VMC (closing speed on mark, derived) | kts |
-| Course / VMG | BRG | Bearing to Mark | ° |
-| Course / VMG | DTG | Distance to Mark | nm |
-| Course / VMG | XTE | Cross-Track Error | nm |
+| Performance | VMG | Velocity Made Good (true wind) | kts |
+| Performance | VMC | VMC (closing speed on mark) | kts |
+| Performance | BRG | Bearing to Mark | ° |
+| Performance | DTG | Distance to Mark | nm |
+| Performance | XTE | Cross-Track Error | nm |
 | Racing | TTS | Time to Start | s |
 | Racing | TTL | Time to Line | s |
 | Racing | TTB | Time to Burn | s |
@@ -88,8 +88,17 @@ same path. Values are converted (unit scaling) before being written to CSV.
 | Racing | NLH | Next Leg Heading | ° |
 | Racing | STA | Start Time | s |
 
-VMC is derived in Python from SOG, COGt, and BRG rather than queried directly
-— it's fetched automatically as a dependency if you select VMC without those.
+**VMG vs. VMC** — these are often confused, including by Signal K's own path
+naming. VMG (Velocity Made Good) is boat speed relative to the *true wind*
+(cos of true wind angle) — used to judge upwind/downwind efficiency against
+polar targets. VMC (Velocity Made good on Course) is boat speed relative to
+a *waypoint bearing* (cos of COG − BRG) — closing speed toward a mark.
+Signal K's `navigation.course.calcValues.velocityMadeGood` path is actually
+VMC despite the name; this app sources VMG separately from
+`performance.velocityMadeGood` (published by signalk-polar-performance-plugin)
+to keep the two straight. VMC (along with BRG/DTG/XTE) only has values when
+a destination/course is active via the Course API; VMG only has values when
+the polar-performance plugin has a polar configured.
 
 Adding a new measurement is a one-line addition to `MEASUREMENT_GROUPS` in
 `app.py` — no other code changes needed unless it requires a new unit
