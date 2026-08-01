@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-01
+
+### Added
+- Nearly the entire signalk-polar-performance-plugin output as new Performance
+  columns: TGTA, TGTS, TVMG (target angle/speed/VMG), PSPD, PSR, PVMG, PVMGR
+  (polar speed/VMG and their ratios to actual), BTA, BTVMG, GBA, GBVMG (beat
+  and gybe angle plus their VMG), VMAX, VMAXA (max speed and its angle), OWA
+  (optimum wind angle), TACK (true tack angle). Checked by default, same as
+  every other measurement — uncheck to exclude.
+- Deliberately excluded `performance.velocityMadeGoodToWaypoint` — it's the
+  same waypoint-closing-speed concept as the existing VMC column (just the
+  newer schema alias for what `navigation.course.calcValues.velocityMadeGood`
+  already publishes), so adding it would just be a duplicate column.
+
 ## [0.3.0] - 2026-08-01
 
 ### Added

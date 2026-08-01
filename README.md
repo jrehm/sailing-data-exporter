@@ -1,7 +1,7 @@
 # Sailing Data Exporter
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-0.3.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.4.0-orange.svg)](CHANGELOG.md)
 
 A small Flask app for pulling a time window of Signal K data out of InfluxDB
 and downloading it as a CSV — for post-race analysis, polar generation, or
@@ -81,6 +81,21 @@ same path. Values are converted (unit scaling) before being written to CSV.
 | Wind | MROT | Mast Rotation | ° |
 | Performance | VMG | Velocity Made Good (true wind) | kts |
 | Performance | VMC | VMC (closing speed on mark) | kts |
+| Performance | TGTA | Target Angle | ° |
+| Performance | TGTS | Target Speed | kts |
+| Performance | TVMG | Target VMG | kts |
+| Performance | PSPD | Polar Speed | kts |
+| Performance | PSR | Polar Speed Ratio | ratio |
+| Performance | PVMG | Polar VMG | kts |
+| Performance | PVMGR | Polar VMG Ratio | ratio |
+| Performance | BTA | Beat Angle | ° |
+| Performance | BTVMG | Beat Angle VMG | kts |
+| Performance | GBA | Gybe Angle | ° |
+| Performance | GBVMG | Gybe Angle VMG | kts |
+| Performance | VMAX | Max Speed | kts |
+| Performance | VMAXA | Max Speed Angle | ° |
+| Performance | OWA | Optimum Wind Angle | ° |
+| Performance | TACK | Tack Angle (True) | ° |
 | Racing | TTS | Time to Start | s |
 | Racing | TTL | Time to Line | s |
 | Racing | TTB | Time to Burn | s |
@@ -97,8 +112,9 @@ Signal K's `navigation.course.calcValues.velocityMadeGood` path is actually
 VMC despite the name; this app sources VMG separately from
 `performance.velocityMadeGood` (published by signalk-polar-performance-plugin)
 to keep the two straight. VMC (along with BRG/DTG/XTE) only has values when
-a destination/course is active via the Course API; VMG only has values when
-the polar-performance plugin has a polar configured.
+a destination/course is active via the Course API; VMG and the rest of the
+Performance group (target/polar/beat/gybe/max-speed columns) only have
+values when signalk-polar-performance-plugin has a polar loaded.
 
 Adding a new measurement is a one-line addition to `MEASUREMENT_GROUPS` in
 `app.py` — no other code changes needed unless it requires a new unit

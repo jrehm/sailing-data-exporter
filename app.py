@@ -9,7 +9,7 @@ from flask import Flask, Response, render_template, request
 from influxdb_client import InfluxDBClient
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 # ---------------------------------------------------------------------------
 # Config
@@ -87,8 +87,23 @@ MEASUREMENT_GROUPS = [
         ("Mast Rotation",       "MROT", "navigation.mast.rotation",       "value", "derived-data",   _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Performance", [
-        ("Velocity Made Good (true wind)", "VMG", "performance.velocityMadeGood",                   "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
-        ("VMC (closing speed on mark)",    "VMC", "navigation.course.calcValues.velocityMadeGood",  "value", "course-provider",                   _scale(_MPS_TO_KTS), "kts"),
+        ("Velocity Made Good (true wind)", "VMG",   "performance.velocityMadeGood",              "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
+        ("VMC (closing speed on mark)",    "VMC",   "navigation.course.calcValues.velocityMadeGood", "value", "course-provider",               _scale(_MPS_TO_KTS), "kts"),
+        ("Target Angle",                   "TGTA",  "performance.targetAngle",                   "value", "signalk-polar-performance-plugin", _scale(_RAD_TO_DEG), "°"),
+        ("Target Speed",                   "TGTS",  "performance.targetSpeed",                   "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
+        ("Target VMG",                     "TVMG",  "performance.targetVelocityMadeGood",        "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
+        ("Polar Speed",                    "PSPD",  "performance.polarSpeed",                    "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
+        ("Polar Speed Ratio",              "PSR",   "performance.polarSpeedRatio",               "value", "signalk-polar-performance-plugin", _IDENTITY,            "ratio"),
+        ("Polar VMG",                      "PVMG",  "performance.polarVelocityMadeGood",         "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
+        ("Polar VMG Ratio",                "PVMGR", "performance.polarVelocityMadeGoodRatio",    "value", "signalk-polar-performance-plugin", _IDENTITY,            "ratio"),
+        ("Beat Angle",                     "BTA",   "performance.beatAngle",                     "value", "signalk-polar-performance-plugin", _scale(_RAD_TO_DEG), "°"),
+        ("Beat Angle VMG",                 "BTVMG", "performance.beatAngleVelocityMadeGood",     "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
+        ("Gybe Angle",                     "GBA",   "performance.gybeAngle",                     "value", "signalk-polar-performance-plugin", _scale(_RAD_TO_DEG), "°"),
+        ("Gybe Angle VMG",                 "GBVMG", "performance.gybeAngleVelocityMadeGood",     "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
+        ("Max Speed",                      "VMAX",  "performance.maxSpeed",                      "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
+        ("Max Speed Angle",                "VMAXA", "performance.maxSpeedAngle",                 "value", "signalk-polar-performance-plugin", _scale(_RAD_TO_DEG), "°"),
+        ("Optimum Wind Angle",             "OWA",   "performance.optimumWindAngle",              "value", "signalk-polar-performance-plugin", _scale(_RAD_TO_DEG), "°"),
+        ("Tack Angle (True)",              "TACK",  "performance.tackTrue",                      "value", "signalk-polar-performance-plugin", _scale(_RAD_TO_DEG), "°"),
     ]),
     ("Racing", [
         ("Time to Start",    "TTS", "navigation.racing.timeToStart",       "value", None, _IDENTITY,             "s"),
