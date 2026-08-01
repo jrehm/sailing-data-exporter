@@ -142,5 +142,4 @@ shown in the footer of the app itself.
 
 ## License
 
-Private project for personal/crew use on *Morticia* — not currently licensed
-for redistribution.
+MIT License - See [LICENSE](LICENSE) file for details.
