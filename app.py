@@ -9,7 +9,7 @@ from flask import Flask, Response, render_template, request
 from influxdb_client import InfluxDBClient
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 # ---------------------------------------------------------------------------
 # Config
@@ -72,10 +72,11 @@ MEASUREMENT_GROUPS = [
         ("Heading True",               "HDGt", "navigation.headingTrue",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
         ("Rate of Turn",               "ROT",  "navigation.rateOfTurn",              "value", "SensESP.XX",     _scale(_RADS_TO_DEGMIN), "°/min"),
         ("Leeway Angle",               "LEE",  "navigation.leewayAngle",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
-    ]),
-    ("Attitude", [
-        ("Roll",  "ROLL",  "navigation.attitude.roll",  "value", "signalk-attitude-calibrator.XX", _scale(_RAD_TO_DEG), "°"),
-        ("Pitch", "PITCH", "navigation.attitude.pitch", "value", "signalk-attitude-calibrator.XX", _scale(_RAD_TO_DEG), "°"),
+        ("Roll",                       "ROLL", "navigation.attitude.roll",           "value", "signalk-attitude-calibrator.XX", _scale(_RAD_TO_DEG), "°"),
+        ("Pitch",                      "PITCH","navigation.attitude.pitch",          "value", "signalk-attitude-calibrator.XX", _scale(_RAD_TO_DEG), "°"),
+        ("Bearing to Mark",            "BRG",  "navigation.course.calcValues.bearingTrue",      "value", None, _scale(_RAD_TO_DEG), "°"),
+        ("Distance to Mark",           "DTG",  "navigation.course.calcValues.distance",         "value", None, _scale(_M_TO_NM),    "nm"),
+        ("Cross-Track Error",          "XTE",  "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_NM),    "nm"),
     ]),
     ("Wind", [
         ("Apparent Wind Speed", "AWS",  "environment.wind.speedApparent", "value", "AdvancedWind",   _scale(_MPS_TO_KTS), "kts"),
@@ -88,9 +89,6 @@ MEASUREMENT_GROUPS = [
     ("Performance", [
         ("Velocity Made Good (true wind)", "VMG", "performance.velocityMadeGood",                   "value", "signalk-polar-performance-plugin", _scale(_MPS_TO_KTS), "kts"),
         ("VMC (closing speed on mark)",    "VMC", "navigation.course.calcValues.velocityMadeGood",  "value", "course-provider",                   _scale(_MPS_TO_KTS), "kts"),
-        ("Bearing to Mark",                "BRG", "navigation.course.calcValues.bearingTrue",       "value", None,                                _scale(_RAD_TO_DEG), "°"),
-        ("Distance to Mark",               "DTG", "navigation.course.calcValues.distance",          "value", None,                                _scale(_M_TO_NM),    "nm"),
-        ("Cross-Track Error",              "XTE", "navigation.course.calcValues.crossTrackError",   "value", None,                                _scale(_M_TO_NM),    "nm"),
     ]),
     ("Racing", [
         ("Time to Start",    "TTS", "navigation.racing.timeToStart",       "value", None, _IDENTITY,             "s"),
@@ -223,6 +221,19 @@ def index():
         interval_options=INTERVAL_OPTIONS,
         default_interval="10s",
     )
+
+
+@app.route("/changelog")
+def changelog():
+    """Serve CHANGELOG.md locally so it's readable even with no internet
+    access underway (this app runs on the boat's own network)."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "CHANGELOG.md")
+    try:
+        with open(path, encoding="utf-8") as f:
+            content = f.read()
+    except OSError:
+        content = "CHANGELOG.md not found."
+    return render_template("changelog.html", content=content)
 
 
 @app.route("/download", methods=["POST"])

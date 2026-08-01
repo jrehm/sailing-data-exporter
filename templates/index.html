@@ -193,11 +193,16 @@
 
     .version {
       text-align: center;
-      color: #90a4ae;
       font-size: 0.7rem;
       padding: 1rem 0 0.5rem;
       opacity: 0.5;
     }
+
+    .version a {
+      color: #90a4ae;
+      text-decoration: none;
+    }
+    .version a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -267,7 +272,7 @@
 
 </form>
 
-<footer class="version">v{{ VERSION }}</footer>
+<footer class="version"><a href="{{ url_for('changelog') }}">v{{ VERSION }}</a></footer>
 
 <script>
   // Fix group data-group indices (Jinja loop.index0 is on the outer loop)

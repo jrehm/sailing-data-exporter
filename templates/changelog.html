@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changelog - Sailing Data Exporter</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 1.5rem;
+    }
+
+    h1 {
+      color: #4fc3f7;
+      margin: 0 0 1rem;
+      font-size: 1.5rem;
+    }
+
+    a.back-link {
+      color: #90caf9;
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+    a.back-link:hover { text-decoration: underline; }
+
+    .card {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: #cfd8dc;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+<a class="back-link" href="{{ url_for('index') }}">&larr; Back</a>
+<h1>Changelog</h1>
+
+<div class="card">
+<pre>{{ content }}</pre>
+</div>
+
+</body>
+</html>

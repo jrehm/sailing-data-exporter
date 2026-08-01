@@ -1,7 +1,7 @@
 # Sailing Data Exporter
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-0.2.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.3.0-orange.svg)](CHANGELOG.md)
 
 A small Flask app for pulling a time window of Signal K data out of InfluxDB
 and downloading it as a CSV — for post-race analysis, polar generation, or
@@ -68,8 +68,11 @@ same path. Values are converted (unit scaling) before being written to CSV.
 | Navigation | HDGt | Heading True | ° |
 | Navigation | ROT | Rate of Turn | °/min |
 | Navigation | LEE | Leeway Angle | ° |
-| Attitude | ROLL | Roll | ° |
-| Attitude | PITCH | Pitch | ° |
+| Navigation | ROLL | Roll | ° |
+| Navigation | PITCH | Pitch | ° |
+| Navigation | BRG | Bearing to Mark | ° |
+| Navigation | DTG | Distance to Mark | nm |
+| Navigation | XTE | Cross-Track Error | nm |
 | Wind | AWS | Apparent Wind Speed | kts |
 | Wind | AWA | Apparent Wind Angle | ° |
 | Wind | TWS | True Wind Speed | kts |
@@ -78,9 +81,6 @@ same path. Values are converted (unit scaling) before being written to CSV.
 | Wind | MROT | Mast Rotation | ° |
 | Performance | VMG | Velocity Made Good (true wind) | kts |
 | Performance | VMC | VMC (closing speed on mark) | kts |
-| Performance | BRG | Bearing to Mark | ° |
-| Performance | DTG | Distance to Mark | nm |
-| Performance | XTE | Cross-Track Error | nm |
 | Racing | TTS | Time to Start | s |
 | Racing | TTL | Time to Line | s |
 | Racing | TTB | Time to Burn | s |
@@ -132,7 +132,8 @@ ssh halos "cd /home/pi/GitHub/sailing-data-exporter && git pull && sudo systemct
 sailing-data-exporter/
 ├── app.py                                        # Flask app: routes, measurement defs, CSV builder
 ├── templates/
-│   └── index.html                                # Single-page UI (time window, checkboxes, download)
+│   ├── index.html                                # Single-page UI (time window, checkboxes, download)
+│   └── changelog.html                             # Renders CHANGELOG.md, linked from the version footer
 ├── deploy/halos/
 │   ├── install.sh                                 # One-shot install on HALPI2
 │   ├── sailing-data-exporter.service               # systemd unit

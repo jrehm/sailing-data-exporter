@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-01
+
+### Added
+- `/changelog` route, serving `CHANGELOG.md` locally so it's readable with
+  no internet access underway
+- Version number in the UI footer is now a link to the changelog
+
+### Changed
+- Merged the standalone "Attitude" group (Roll, Pitch) into Navigation —
+  Location is earth-frame position (lat/lon/depth), while Roll/Pitch are
+  vessel orientation, the same category as Heading and Rate of Turn
+- Moved BRG, DTG, XTE from Performance into Navigation, leaving Performance
+  as just the two velocity-made-good columns (VMG, VMC)
+
 ## [0.2.0] - 2026-08-01
 
 ### Added
