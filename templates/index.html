@@ -190,6 +190,14 @@
       color: #ef9a9a;
       font-size: 0.9rem;
     }
+
+    .version {
+      text-align: center;
+      color: #90a4ae;
+      font-size: 0.7rem;
+      padding: 1rem 0 0.5rem;
+      opacity: 0.5;
+    }
   </style>
 </head>
 <body>
@@ -258,6 +266,8 @@
   </div>
 
 </form>
+
+<footer class="version">v{{ VERSION }}</footer>
 
 <script>
   // Fix group data-group indices (Jinja loop.index0 is on the outer loop)

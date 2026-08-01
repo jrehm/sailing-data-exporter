@@ -9,6 +9,8 @@ from flask import Flask, Response, render_template, request
 from influxdb_client import InfluxDBClient
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+__version__ = "0.1.0"
+
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
@@ -138,6 +140,7 @@ def _compute_vmc(sog_str: str, cogt_str: str, brg_str: str) -> str:
 app = Flask(__name__)
 if os.environ.get("BEHIND_PROXY", "").lower() in ("1", "true", "yes"):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_prefix=1)
+app.jinja_env.globals["VERSION"] = __version__
 
 
 # ---------------------------------------------------------------------------
