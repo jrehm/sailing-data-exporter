@@ -1,15 +1,18 @@
 import csv
 import io
+import logging
 import math
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from flask import Flask, Response, render_template, request
 from influxdb_client import InfluxDBClient
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
+
+logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
 # Config
@@ -20,7 +23,11 @@ INFLUX_TOKEN  = os.environ.get("INFLUX_TOKEN",  "")
 INFLUX_ORG    = os.environ.get("INFLUX_ORG",    "marine")
 INFLUX_BUCKET = os.environ.get("INFLUX_BUCKET", "signalk")
 
-PORT = int(os.environ.get("PORT", 5002))
+try:
+    PORT = int(os.environ.get("PORT", 5002))
+except (TypeError, ValueError):
+    logger.warning("Invalid PORT value %r, falling back to 5002", os.environ.get("PORT"))
+    PORT = 5002
 
 # ---------------------------------------------------------------------------
 # Unit conversion helpers
@@ -48,6 +55,28 @@ def _passthrough(v: float) -> float:
     away GPS precision (4dp rounding = ~11m resolution, unacceptable for
     position/track data)."""
     return v
+
+
+# Spreadsheet formula-injection prefixes (Excel/Sheets evaluate cells that
+# start with these). InfluxDB values are numeric in practice, but the
+# fallback path in _query_series can surface arbitrary strings — a value
+# like "=HYPERLINK(...)" would execute in a user's spreadsheet.
+_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _csv_safe(value: str) -> str:
+    """Neutralize spreadsheet-formula injection while keeping numbers intact.
+
+    Only strings that *look* like formulas are guarded: a leading '-' is
+    legitimately used by negative values, so we leave anything that parses
+    as a float untouched.
+    """
+    if value and value[0] in _FORMULA_PREFIXES:
+        try:
+            float(value)
+        except ValueError:
+            return "'" + value
+    return value
 
 # ---------------------------------------------------------------------------
 # Measurement definitions
@@ -134,6 +163,8 @@ INTERVAL_OPTIONS = [
     ("1m",  "1 minute"),
 ]
 
+_INTERVAL_KEYS = frozenset(k for k, _ in INTERVAL_OPTIONS)
+
 # Flat lookup: abbrev → (measurement, field, preferred_source, convert)
 _ABBREV_MAP = {
     abbrev: (measurement, field, source, convert)
@@ -183,6 +214,14 @@ def _query_series(client: InfluxDBClient, measurement: str, field: str,
     try:
         tables = client.query_api().query(flux)
     except Exception:
+        # Don't fail the whole export because one measurement errored, but
+        # do surface it — a silently empty column is indistinguishable from
+        # "no data in range" and hides broken paths/sources.
+        logger.warning(
+            "InfluxDB query failed for %s/%s (source=%s, interval=%s)",
+            measurement, field, preferred_source or "any", interval,
+            exc_info=True,
+        )
         return {}
 
     result: dict[str, str] = {}
@@ -223,11 +262,11 @@ def _build_csv(selected_abbrevs: list[str],
         )
         writer.writeheader()
         for ts in all_ts:
-            utc_dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            utc_dt = datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=UTC)
             local_ts = utc_dt.astimezone(tz).strftime("%Y-%m-%d %H:%M:%S")
             row: dict = {"timestamp": local_ts}
             for abbrev in selected_abbrevs:
-                row[abbrev] = data[abbrev].get(ts, "")
+                row[abbrev] = _csv_safe(data[abbrev].get(ts, ""))
             writer.writerow(row)
 
         return out.getvalue()
@@ -273,13 +312,13 @@ def download():
     try:
         tz = ZoneInfo(tz_name)
     except (ZoneInfoNotFoundError, KeyError):
-        tz = timezone.utc
+        tz = UTC
 
     if not start_raw or not stop_raw:
         return "Missing start or stop time.", 400
     if not selected:
         return "No measurements selected.", 400
-    if interval not in {k for k, _ in INTERVAL_OPTIONS}:
+    if interval not in _INTERVAL_KEYS:
         interval = "10s"
 
     try:
@@ -321,5 +360,11 @@ def download():
 # Entry point
 # ---------------------------------------------------------------------------
 
-if __name__ == "__main__":
+def main() -> None:
+    """Run the Flask dev server (also the `sailing-data-exporter` console
+    script entry point)."""
     app.run(host="0.0.0.0", port=PORT)
+
+
+if __name__ == "__main__":
+    main()
