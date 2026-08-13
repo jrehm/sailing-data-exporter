@@ -9,7 +9,7 @@ from flask import Flask, Response, render_template, request
 from influxdb_client import InfluxDBClient
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 # ---------------------------------------------------------------------------
 # Config
@@ -77,6 +77,17 @@ MEASUREMENT_GROUPS = [
         ("Bearing to Mark",            "BRG",  "navigation.course.calcValues.bearingTrue",      "value", None, _scale(_RAD_TO_DEG), "°"),
         ("Distance to Mark",           "DTG",  "navigation.course.calcValues.distance",         "value", None, _scale(_M_TO_NM),    "nm"),
         ("Cross-Track Error",          "XTE",  "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_NM),    "nm"),
+    ]),
+    ("Magnetic Calibration", [
+        ("Mag Cal Fit (in use)",      "MFIT",  "orientation.calibration.magfit",                  "value", "SensESP.XX", _IDENTITY,            "%"),
+        ("Mag Cal Fit (trial)",       "MFITT", "orientation.calibration.magfittrial",             "value", "SensESP.XX", _IDENTITY,            "%"),
+        ("Mag Cal Solver Order",      "MSOLV", "orientation.calibration.magsolver",               "value", "SensESP.XX", _IDENTITY,            "0-10"),
+        ("Mag Noise",                 "MNOIS", "orientation.calibration.magnoise",                "value", "SensESP.XX", _IDENTITY,            "unitless"),
+        ("Mag Field B (in use)",      "MAGB",  "orientation.calibration.magfieldmagnitude",       "value", "SensESP.XX", _IDENTITY,            "µT"),
+        ("Mag Field B (trial)",       "MAGBT", "orientation.calibration.magfieldmagnitudetrial",  "value", "SensESP.XX", _IDENTITY,            "µT"),
+        ("Mag Inclination",           "MINCL", "orientation.calibration.maginclination",          "value", "SensESP.XX", _scale(_RAD_TO_DEG),  "°"),
+        ("Last MagCal Event Fit Δ",   "MCALF", "orientation.calibration.lastcaleventfitdeltapct",     "value", "SensESP.XX", _IDENTITY,        "%"),
+        ("Last MagCal Event Heading Δ","MCALH","orientation.calibration.lastcaleventheadingdeltadeg", "value", "SensESP.XX", _IDENTITY,        "°"),
     ]),
     ("Wind", [
         ("Apparent Wind Speed", "AWS",  "environment.wind.speedApparent", "value", "AdvancedWind",   _scale(_MPS_TO_KTS), "kts"),

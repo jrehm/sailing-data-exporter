@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-13
+
+### Added
+- New "Magnetic Calibration" group, sourcing the `orientation.calibration.*`
+  paths added by yesterday's Morticia-eCompass firmware update: MFIT/MFITT
+  (in-use/trial fit error, %), MSOLV (solver algorithm order, 0-10), MNOIS
+  (magnetic noise), MAGB/MAGBT (in-use/trial field magnitude, µT), MINCL
+  (field inclination, converted rad→°), MCALF/MCALH (fit-error and heading
+  shift from the last auto-accepted calibration event). Units/thresholds
+  pulled directly from the firmware's own `SKMetadata` in
+  Morticia-eCompass/src/main.cpp rather than inferred from magnitudes.
+  Verified all 9 paths are logged to InfluxDB before adding.
+
 ## [0.4.0] - 2026-08-01
 
 ### Added

@@ -1,7 +1,7 @@
 # Sailing Data Exporter
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-0.4.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.5.0-orange.svg)](CHANGELOG.md)
 
 A small Flask app for pulling a time window of Signal K data out of InfluxDB
 and downloading it as a CSV — for post-race analysis, polar generation, or
@@ -73,6 +73,15 @@ same path. Values are converted (unit scaling) before being written to CSV.
 | Navigation | BRG | Bearing to Mark | ° |
 | Navigation | DTG | Distance to Mark | nm |
 | Navigation | XTE | Cross-Track Error | nm |
+| Magnetic Calibration | MFIT | Mag Cal Fit (in use) | % |
+| Magnetic Calibration | MFITT | Mag Cal Fit (trial) | % |
+| Magnetic Calibration | MSOLV | Mag Cal Solver Order | 0-10 |
+| Magnetic Calibration | MNOIS | Mag Noise | unitless |
+| Magnetic Calibration | MAGB | Mag Field B (in use) | µT |
+| Magnetic Calibration | MAGBT | Mag Field B (trial) | µT |
+| Magnetic Calibration | MINCL | Mag Inclination | ° |
+| Magnetic Calibration | MCALF | Last MagCal Event Fit Δ | % |
+| Magnetic Calibration | MCALH | Last MagCal Event Heading Δ | ° |
 | Wind | AWS | Apparent Wind Speed | kts |
 | Wind | AWA | Apparent Wind Angle | ° |
 | Wind | TWS | True Wind Speed | kts |
@@ -115,6 +124,16 @@ to keep the two straight. VMC (along with BRG/DTG/XTE) only has values when
 a destination/course is active via the Course API; VMG and the rest of the
 Performance group (target/polar/beat/gybe/max-speed columns) only have
 values when signalk-polar-performance-plugin has a polar loaded.
+
+**Magnetic Calibration** — published by the Morticia-eCompass firmware
+(SensESP), these are diagnostics for the mag-cal solver, not navigation
+data per se. Rough guidance per the firmware's own comments: MFIT under
+~3.5% is a good calibration; MNOIS above 0.00056 means the calibration is
+unreliable; MSOLV of 10 is the best solver order the algorithm can reach.
+Comparing MAGB against MAGBT (or watching MCALF/MCALH) is the recommended
+way to tell a genuine magnetic disturbance from an ordinary background
+recalibration — see `docs/magcal-heading-jump-2026-08-11-handoff.md` in
+Morticia-eCompass for the fuller writeup.
 
 Adding a new measurement is a one-line addition to `MEASUREMENT_GROUPS` in
 `app.py` — no other code changes needed unless it requires a new unit
