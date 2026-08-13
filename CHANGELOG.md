@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-13
+
+### Added
+- Full pytest suite (`tests/`) with a fake InfluxDB client — 40 tests
+  covering measurement-table integrity, unit conversions, Flux query
+  construction, wide-CSV assembly (timezone conversion, missing-data
+  padding, first-value-wins), and all HTTP routes end-to-end
+- `pyproject.toml` (packaging metadata, `sailing-data-exporter` console
+  script, pytest/ruff config, dev extras)
+- `make test` / `make lint` targets
+- Log warning with measurement/field context when an InfluxDB query fails,
+  instead of silently returning an empty column
+- CSV formula-injection guard: cells that look like spreadsheet formulas
+  (`=`, `+`, `-`, `@`, tab, CR prefixes on non-numeric values) are
+  neutralized with a leading apostrophe; negative numbers are left intact
+- Robust `PORT` parsing — invalid values fall back to 5002 with a warning
+
+### Changed
+- README features list corrected (groups were out of date; removed the stale
+  "derived columns" claim — VMC has been queried directly since 0.2.0)
+- CLAUDE.md corrected: derived-column pattern (`_compute_vmc`/`_VMC_DEPS`)
+  was removed in 0.2.0 and is documented as such
+
 ## [0.5.0] - 2026-08-13
 
 ### Added

@@ -1,7 +1,7 @@
 # Sailing Data Exporter
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-0.5.0-orange.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.6.0-orange.svg)](CHANGELOG.md)
 
 A small Flask app for pulling a time window of Signal K data out of InfluxDB
 and downloading it as a CSV — for post-race analysis, polar generation, or
@@ -12,10 +12,12 @@ just checking a track in a spreadsheet.
 - Pick a start/stop time (local time, converted to UTC under the hood)
 - Choose a downsample interval (raw 1s up to 1 minute)
 - Check off individual measurements, grouped by category (Location,
-  Navigation, Attitude, Wind, Course/VMG, Racing)
-- Derived columns (e.g. VMC) computed from other selected columns
+  Navigation, Magnetic Calibration, Wind, Performance, Racing)
+- All columns queried directly from InfluxDB (no locally-derived values that
+  can silently diverge from the plugins that publish the data)
 - CSV filename includes the local time window it covers
 - Full GPS precision on Latitude/Longitude (no lossy rounding)
+- CSV cells are guarded against spreadsheet formula injection
 
 ## Requirements
 
@@ -139,6 +141,20 @@ Adding a new measurement is a one-line addition to `MEASUREMENT_GROUPS` in
 `app.py` — no other code changes needed unless it requires a new unit
 conversion.
 
+## Development
+
+```bash
+make install   # venv + pinned requirements + dev extras (pytest, ruff)
+make test      # run the test suite (InfluxDB is mocked — no network needed)
+make lint      # ruff check
+```
+
+The test suite (`tests/`) exercises measurement-table integrity, unit
+conversions, Flux query construction, wide-CSV assembly (including timezone
+conversion and missing-data padding), and the HTTP routes end-to-end. A fake
+InfluxDB client records every Flux query and returns scripted tables, so the
+tests are fast, deterministic, and safe to run without a live database.
+
 ## Deployment (HALPI2 / HALOS)
 
 This runs as a systemd service on HALPI2, fronted by Traefik.
@@ -169,10 +185,18 @@ sailing-data-exporter/
 ├── templates/
 │   ├── index.html                                # Single-page UI (time window, checkboxes, download)
 │   └── changelog.html                             # Renders CHANGELOG.md, linked from the version footer
+├── tests/                                        # pytest suite (mocked InfluxDB, no network)
+│   ├── conftest.py
+│   ├── test_measurements.py
+│   ├── test_conversions.py
+│   ├── test_query.py
+│   ├── test_csv.py
+│   └── test_routes.py
 ├── deploy/halos/
 │   ├── install.sh                                 # One-shot install on HALPI2
 │   ├── sailing-data-exporter.service               # systemd unit
 │   └── sailing-data-exporter.env.example           # Env var template
+├── pyproject.toml                                 # Packaging + pytest/ruff config
 ├── requirements.txt
 ├── Makefile
 ├── CHANGELOG.md

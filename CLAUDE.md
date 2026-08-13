@@ -14,6 +14,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 make install   # Create venv, install pinned requirements
 make run       # Dev server at localhost:5002
+make test      # Run the pytest suite (mocked InfluxDB, no network)
 make freeze    # Re-pin requirements.txt from the active venv
 ```
 
@@ -42,12 +43,17 @@ Everything about a measurement lives in one tuple in `app.py`:
 - `convert`: function applied to the raw float before it's written to CSV —
   either `_scale(factor)` (multiplies and rounds to 4dp) or `_passthrough`
   (no rounding — only used for LAT/LON, since 4dp is ~11m resolution)
-- Derived columns (currently only VMC) have `measurement=None` and are
-  computed in `_compute_vmc()` from other already-fetched columns instead of
-  queried directly. If you add another derived column, follow this pattern:
-  add it to `MEASUREMENT_GROUPS` with `measurement=None`, declare its
-  dependencies (like `_VMC_DEPS`), and fetch those dependencies automatically
-  in `_build_csv()` even if the user didn't select them.
+- All columns are queried directly from InfluxDB — there are no derived
+  columns. (v0.1.0 had a locally-computed VMC, but it quietly diverged from
+  the course-provider plugin's own calculation and was removed in 0.2.0 in
+  favor of consuming `navigation.course.calcValues.velocityMadeGood`
+  directly. Don't reintroduce derived columns without the same justification.)
+
+### CSV hardening
+
+Values are passed through `_csv_safe()` before being written. It neutralizes
+spreadsheet formula injection (`=`, `+`, `-`, `@`, tab, CR prefixes on
+non-numeric values) while leaving negative numbers intact. Don't bypass it.
 
 ### Adding a new measurement
 
