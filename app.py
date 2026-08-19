@@ -9,7 +9,7 @@ from flask import Flask, Response, render_template, request
 from influxdb_client import InfluxDBClient
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 # ---------------------------------------------------------------------------
 # Config
@@ -70,6 +70,8 @@ MEASUREMENT_GROUPS = [
         ("Speed Over Ground",          "SOG",  "navigation.speedOverGround",         "value", "n2k-can0.10",    _scale(_MPS_TO_KTS),     "kts"),
         ("Course Over Ground (True)",  "COGt", "navigation.courseOverGroundTrue",    "value", "n2k-can0.10",    _scale(_RAD_TO_DEG),     "°"),
         ("Heading True",               "HDGt", "navigation.headingTrue",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
+        ("Heading Magnetic (eCompass)","HDGmE","navigation.headingMagnetic",         "value", "SensESP.XX",     _scale(_RAD_TO_DEG),     "°"),
+        ("Heading Magnetic (Fluxgate)","HDGmF","navigation.headingMagnetic",         "value", "n2k-can0.9",     _scale(_RAD_TO_DEG),     "°"),
         ("Rate of Turn",               "ROT",  "navigation.rateOfTurn",              "value", "SensESP.XX",     _scale(_RADS_TO_DEGMIN), "°/min"),
         ("Leeway Angle",               "LEE",  "navigation.leewayAngle",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
         ("Roll",                       "ROLL", "navigation.attitude.roll",           "value", "signalk-attitude-calibrator.XX", _scale(_RAD_TO_DEG), "°"),

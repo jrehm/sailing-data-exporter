@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-19
+
+### Added
+- Two explicit-source magnetic heading columns, `HDGmE` (eCompass, source
+  `SensESP.XX`) and `HDGmF` (fluxgate, source `n2k-can0.9`), both from
+  `navigation.headingMagnetic`. Added ahead of switching the boat's live
+  heading source (Signal K priority) from the eCompass to the newly-added
+  N2K fluxgate: `HDGt` (Heading True) has no source filter, so it silently
+  follows whatever Signal K currently prioritizes -- once the fluxgate
+  becomes primary, `HDGt` alone would no longer capture the eCompass's
+  readings, breaking the ongoing eCompass evaluation without any error.
+  These two columns pin to each device explicitly so both keep getting
+  captured by every export regardless of which one is live/primary.
+
 ## [0.5.0] - 2026-08-13
 
 ### Added
