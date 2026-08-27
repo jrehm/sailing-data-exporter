@@ -79,8 +79,8 @@ MEASUREMENT_GROUPS = [
         ("Cross-Track Error",          "XTE",  "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_NM),    "nm"),
     ]),
     ("Magnetic Calibration", [
-        ("Heading Magnetic (eCompass)","HDGmE","navigation.headingMagnetic",         "value", "SensESP.XX",     _scale(_RAD_TO_DEG),     "°"),
-        ("Heading Magnetic (Fluxgate)","HDGmF","navigation.headingMagnetic",         "value", "n2k-can0.9",     _scale(_RAD_TO_DEG),     "°"),
+        ("Heading Magnetic (eCompass)","HDGmE","sensors.ecompass.headingMagnetic",   "value", None,             _scale(_RAD_TO_DEG),     "°"),
+        ("Heading Magnetic (Fluxgate)","HDGmF","sensors.fluxgate.headingMagnetic",   "value", None,             _scale(_RAD_TO_DEG),     "°"),
         ("Mag Cal Fit (in use)",      "MFIT",  "orientation.calibration.magfit",                  "value", "SensESP.XX", _IDENTITY,            "%"),
         ("Mag Cal Fit (trial)",       "MFITT", "orientation.calibration.magfittrial",             "value", "SensESP.XX", _IDENTITY,            "%"),
         ("Mag Cal Solver Order",      "MSOLV", "orientation.calibration.magsolver",               "value", "SensESP.XX", _IDENTITY,            "0-10"),

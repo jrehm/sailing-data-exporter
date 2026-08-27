@@ -12,6 +12,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Navigation group to Magnetic Calibration -- they're mag-cal diagnostics
   inputs, not general navigation data.
 
+### Fixed
+- `HDGmE`/`HDGmF` were coming back empty in every CSV export: both still
+  queried raw `navigation.headingMagnetic` filtered by source, but that path
+  got a `priorityOverrides` entry in SignalK on 2026-08-19, and once a path
+  has an active override, InfluxDB only records the winning source's deltas
+  -- the losing source (eCompass or fluxgate, whichever isn't primary at any
+  given moment) silently stopped reaching InfluxDB at all. Repointed both
+  columns at `sensors.ecompass.headingMagnetic` / `sensors.fluxgate.headingMagnetic`,
+  the dedicated `signalk-path-mapper` duplicate paths that exist specifically
+  to work around this (single source each, so no source filter needed).
+
 ## [0.6.0] - 2026-08-19
 
 ### Added

@@ -129,7 +129,15 @@ values when signalk-polar-performance-plugin has a polar loaded.
 
 **Magnetic Calibration** — published by the Morticia-eCompass firmware
 (SensESP), these are diagnostics for the mag-cal solver, not navigation
-data per se. Rough guidance per the firmware's own comments: MFIT under
+data per se. `HDGmE`/`HDGmF` read from `sensors.ecompass.headingMagnetic` /
+`sensors.fluxgate.headingMagnetic` rather than raw `navigation.headingMagnetic`
+— that path has a `priorityOverrides` entry in SignalK, and once a path has
+an active override, InfluxDB only ever records the winning source's deltas,
+so the losing source (eCompass or fluxgate, whichever isn't primary) silently
+never reaches InfluxDB under the shared path. `signalk-path-mapper` duplicates
+each raw source to its own dedicated path specifically to work around this;
+see `MODIFICATIONS.md` in morticia-project for the full writeup. Rough
+guidance per the firmware's own comments: MFIT under
 ~3.5% is a good calibration; MNOIS above 0.00056 means the calibration is
 unreliable; MSOLV of 10 is the best solver order the algorithm can reach.
 Comparing MAGB against MAGBT (or watching MCALF/MCALH) is the recommended
