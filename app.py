@@ -70,8 +70,6 @@ MEASUREMENT_GROUPS = [
         ("Speed Over Ground",          "SOG",  "navigation.speedOverGround",         "value", "n2k-can0.10",    _scale(_MPS_TO_KTS),     "kts"),
         ("Course Over Ground (True)",  "COGt", "navigation.courseOverGroundTrue",    "value", "n2k-can0.10",    _scale(_RAD_TO_DEG),     "°"),
         ("Heading True",               "HDGt", "navigation.headingTrue",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
-        ("Heading Magnetic (eCompass)","HDGmE","navigation.headingMagnetic",         "value", "SensESP.XX",     _scale(_RAD_TO_DEG),     "°"),
-        ("Heading Magnetic (Fluxgate)","HDGmF","navigation.headingMagnetic",         "value", "n2k-can0.9",     _scale(_RAD_TO_DEG),     "°"),
         ("Rate of Turn",               "ROT",  "navigation.rateOfTurn",              "value", "SensESP.XX",     _scale(_RADS_TO_DEGMIN), "°/min"),
         ("Leeway Angle",               "LEE",  "navigation.leewayAngle",             "value", None,             _scale(_RAD_TO_DEG),     "°"),
         ("Roll",                       "ROLL", "navigation.attitude.roll",           "value", "signalk-attitude-calibrator.XX", _scale(_RAD_TO_DEG), "°"),
@@ -81,6 +79,8 @@ MEASUREMENT_GROUPS = [
         ("Cross-Track Error",          "XTE",  "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_NM),    "nm"),
     ]),
     ("Magnetic Calibration", [
+        ("Heading Magnetic (eCompass)","HDGmE","navigation.headingMagnetic",         "value", "SensESP.XX",     _scale(_RAD_TO_DEG),     "°"),
+        ("Heading Magnetic (Fluxgate)","HDGmF","navigation.headingMagnetic",         "value", "n2k-can0.9",     _scale(_RAD_TO_DEG),     "°"),
         ("Mag Cal Fit (in use)",      "MFIT",  "orientation.calibration.magfit",                  "value", "SensESP.XX", _IDENTITY,            "%"),
         ("Mag Cal Fit (trial)",       "MFITT", "orientation.calibration.magfittrial",             "value", "SensESP.XX", _IDENTITY,            "%"),
         ("Mag Cal Solver Order",      "MSOLV", "orientation.calibration.magsolver",               "value", "SensESP.XX", _IDENTITY,            "0-10"),

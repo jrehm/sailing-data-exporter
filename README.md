@@ -73,6 +73,8 @@ same path. Values are converted (unit scaling) before being written to CSV.
 | Navigation | BRG | Bearing to Mark | ° |
 | Navigation | DTG | Distance to Mark | nm |
 | Navigation | XTE | Cross-Track Error | nm |
+| Magnetic Calibration | HDGmE | Heading Magnetic (eCompass) | ° |
+| Magnetic Calibration | HDGmF | Heading Magnetic (Fluxgate) | ° |
 | Magnetic Calibration | MFIT | Mag Cal Fit (in use) | % |
 | Magnetic Calibration | MFITT | Mag Cal Fit (trial) | % |
 | Magnetic Calibration | MSOLV | Mag Cal Solver Order | 0-10 |
