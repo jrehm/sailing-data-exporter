@@ -74,6 +74,7 @@ same path. Values are converted (unit scaling) before being written to CSV.
 | Navigation | DTG | Distance to Mark | nm |
 | Navigation | XTE | Cross-Track Error | nm |
 | Magnetic Calibration | HDGmE | Heading Magnetic (eCompass) | ° |
+| Magnetic Calibration | HDGmT | Heading Magnetic (eCompass TC) | ° |
 | Magnetic Calibration | HDGmF | Heading Magnetic (Fluxgate) | ° |
 | Magnetic Calibration | MFIT | Mag Cal Fit (in use) | % |
 | Magnetic Calibration | MFITT | Mag Cal Fit (trial) | % |
@@ -129,7 +130,8 @@ values when signalk-polar-performance-plugin has a polar loaded.
 
 **Magnetic Calibration** — published by the Morticia-eCompass firmware
 (SensESP), these are diagnostics for the mag-cal solver, not navigation
-data per se. `HDGmE`/`HDGmF` read from `sensors.ecompass.headingMagnetic` /
+data per se. `HDGmE`/`HDGmT`/`HDGmF` read from
+`sensors.ecompass.headingMagnetic` / `sensors.ecompass.headingMagneticTC` /
 `sensors.fluxgate.headingMagnetic` rather than raw `navigation.headingMagnetic`
 — that path has a `priorityOverrides` entry in SignalK, and once a path has
 an active override, InfluxDB only ever records the winning source's deltas,

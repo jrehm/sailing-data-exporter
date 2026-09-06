@@ -80,6 +80,7 @@ MEASUREMENT_GROUPS = [
     ]),
     ("Magnetic Calibration", [
         ("Heading Magnetic (eCompass)","HDGmE","sensors.ecompass.headingMagnetic",   "value", None,             _scale(_RAD_TO_DEG),     "°"),
+        ("Heading Magnetic (eCompass TC)","HDGmT","sensors.ecompass.headingMagneticTC","value", None,           _scale(_RAD_TO_DEG),     "°"),
         ("Heading Magnetic (Fluxgate)","HDGmF","sensors.fluxgate.headingMagnetic",   "value", None,             _scale(_RAD_TO_DEG),     "°"),
         ("Mag Cal Fit (in use)",      "MFIT",  "orientation.calibration.magfit",                  "value", "SensESP.XX", _IDENTITY,            "%"),
         ("Mag Cal Fit (trial)",       "MFITT", "orientation.calibration.magfittrial",             "value", "SensESP.XX", _IDENTITY,            "%"),

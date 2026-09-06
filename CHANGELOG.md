@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `HDGmT` (Heading Magnetic, eCompass TC) in the Magnetic Calibration group,
+  reading `sensors.ecompass.headingMagneticTC` -- the thermally-corrected
+  eCompass heading introduced by the Phase 2a firmware, publishing since
+  2026-09-04 17:04 UTC. Without this column an export of any post-flash
+  session returns only the uncorrected path, which is the reason those
+  sessions are worth pulling in the first place. Note that sessions before
+  2026-09-04 will have this column empty, and sessions before
+  2026-08-19 20:00 EDT have `HDGmE`/`HDGmF` empty too -- neither path exists
+  in InfluxDB before then.
+
 ### Changed
 - Moved `HDGmE` and `HDGmF` (magnetic heading, eCompass/fluxgate) from the
   Navigation group to Magnetic Calibration -- they're mag-cal diagnostics
