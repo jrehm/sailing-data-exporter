@@ -9,7 +9,7 @@ from flask import Flask, Response, render_template, request
 from influxdb_client import InfluxDBClient
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 # ---------------------------------------------------------------------------
 # Config
