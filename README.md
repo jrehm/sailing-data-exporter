@@ -73,9 +73,12 @@ same path. Values are converted (unit scaling) before being written to CSV.
 | Navigation | BRG | Bearing to Mark | ° |
 | Navigation | DTG | Distance to Mark | nm |
 | Navigation | XTE | Cross-Track Error | nm |
+| Navigation | SATS | GPS Satellites in Use | count |
+| Navigation | HDOP | GPS HDOP | unitless |
 | Magnetic Calibration | HDGmE | Heading Magnetic (eCompass) | ° |
 | Magnetic Calibration | HDGmT | Heading Magnetic (eCompass TC) | ° |
 | Magnetic Calibration | HDGmF | Heading Magnetic (Fluxgate) | ° |
+| Magnetic Calibration | ETEMP | eCompass Die Temperature | °C |
 | Magnetic Calibration | MFIT | Mag Cal Fit (in use) | % |
 | Magnetic Calibration | MFITT | Mag Cal Fit (trial) | % |
 | Magnetic Calibration | MSOLV | Mag Cal Solver Order | 0-10 |

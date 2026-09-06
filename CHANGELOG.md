@@ -8,15 +8,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `ETEMP` (eCompass die temperature, °C) from
+  `environment.inside.ecompass.temperature`, source `SensESP.XX`. Signal K
+  publishes temperature in Kelvin and `_scale()` is multiply-only, so this
+  adds a `_kelvin_to_c()` converter. Without this column the thermal-offset
+  (TCO) model cannot be applied to or validated against sailing data from the
+  CSV alone -- it required a separate InfluxDB join, which is why the open
+  "apply the TCO coefficients to the sailing data" task had no clean path.
+- `SATS` and `HDOP` (`navigation.gnss.satellites`,
+  `navigation.gnss.horizontalDilution`). These make GPS fix quality visible
+  in the export so the cleaning pipeline can filter degraded rows on the
+  actual cause rather than the bit-identical-to-previous heuristic. Relevant
+  now: with the antenna obstruction active, 26.4% of underway samples on
+  08-26 and 17.7% on 09-02 have a frozen velocity solution.
 - `HDGmT` (Heading Magnetic, eCompass TC) in the Magnetic Calibration group,
   reading `sensors.ecompass.headingMagneticTC` -- the thermally-corrected
   eCompass heading introduced by the Phase 2a firmware, publishing since
-  2026-09-04 17:04 UTC. Without this column an export of any post-flash
-  session returns only the uncorrected path, which is the reason those
-  sessions are worth pulling in the first place. Note that sessions before
-  2026-09-04 will have this column empty, and sessions before
-  2026-08-19 20:00 EDT have `HDGmE`/`HDGmF` empty too -- neither path exists
-  in InfluxDB before then.
+  2026-09-04 17:04 UTC. Without the column, exporting any post-flash session
+  returns only the uncorrected heading.
+
+Column availability by date, for anyone reading old exports:
+  - before 2026-08-19 20:00 EDT : HDGmE, HDGmF, HDGmT all empty
+  - 2026-08-19 20:00 EDT onward : HDGmE, HDGmF populated
+  - 2026-09-04 17:04 UTC onward : HDGmT populated
+  - ETEMP, SATS, HDOP populated for the full history of the bucket
+    (from 2026-07-28)
 
 ### Changed
 - Moved `HDGmE` and `HDGmF` (magnetic heading, eCompass/fluxgate) from the

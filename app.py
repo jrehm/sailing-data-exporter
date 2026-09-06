@@ -43,6 +43,12 @@ def _scale(factor: float):
 _IDENTITY = _scale(1.0)
 
 
+def _kelvin_to_c(v: float) -> float:
+    """Kelvin -> Celsius. Signal K publishes all temperatures in K, and
+    _scale() is multiply-only so it can't express the offset."""
+    return round(v - 273.15, 2)
+
+
 def _passthrough(v: float) -> float:
     """Return the raw value unrounded. Used for lat/lon so we don't throw
     away GPS precision (4dp rounding = ~11m resolution, unacceptable for
@@ -77,11 +83,14 @@ MEASUREMENT_GROUPS = [
         ("Bearing to Mark",            "BRG",  "navigation.course.calcValues.bearingTrue",      "value", None, _scale(_RAD_TO_DEG), "°"),
         ("Distance to Mark",           "DTG",  "navigation.course.calcValues.distance",         "value", None, _scale(_M_TO_NM),    "nm"),
         ("Cross-Track Error",          "XTE",  "navigation.course.calcValues.crossTrackError",  "value", None, _scale(_M_TO_NM),    "nm"),
+        ("GPS Satellites in Use",      "SATS", "navigation.gnss.satellites",                    "value", None, _IDENTITY,           "count"),
+        ("GPS HDOP",                   "HDOP", "navigation.gnss.horizontalDilution",            "value", None, _IDENTITY,           "unitless"),
     ]),
     ("Magnetic Calibration", [
         ("Heading Magnetic (eCompass)","HDGmE","sensors.ecompass.headingMagnetic",   "value", None,             _scale(_RAD_TO_DEG),     "°"),
         ("Heading Magnetic (eCompass TC)","HDGmT","sensors.ecompass.headingMagneticTC","value", None,           _scale(_RAD_TO_DEG),     "°"),
         ("Heading Magnetic (Fluxgate)","HDGmF","sensors.fluxgate.headingMagnetic",   "value", None,             _scale(_RAD_TO_DEG),     "°"),
+        ("eCompass Die Temperature",  "ETEMP", "environment.inside.ecompass.temperature",          "value", "SensESP.XX", _kelvin_to_c,         "°C"),
         ("Mag Cal Fit (in use)",      "MFIT",  "orientation.calibration.magfit",                  "value", "SensESP.XX", _IDENTITY,            "%"),
         ("Mag Cal Fit (trial)",       "MFITT", "orientation.calibration.magfittrial",             "value", "SensESP.XX", _IDENTITY,            "%"),
         ("Mag Cal Solver Order",      "MSOLV", "orientation.calibration.magsolver",               "value", "SensESP.XX", _IDENTITY,            "0-10"),
